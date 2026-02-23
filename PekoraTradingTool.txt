@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         PekoraTrader v2
+// @name         Korone Trading Tool v2.1
 // @namespace    https://pekora.zip
-// @version      2.4
-// @description  Mass trade tool for pekora.zip with Kolimons integration
+// @version      2.5
+// @description  Mass trade tool for pekora.zip with Koromons integration
 // @author       LMoD
 // @match        https://www.pekora.zip/*
 // @match        https://pekora.zip/*
@@ -10,7 +10,7 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_notification
-// @connect      kolimons.xyz
+// @connect      koromons.xyz
 // @connect      pekora.zip
 // @connect      www.pekora.zip
 // @run-at       document-end
@@ -33,7 +33,7 @@
   const TRADE_URL    = 'https://www.pekora.zip/apisite/trades/v1/trades/send';
   const OUTBOUND_URL = cur => `https://www.pekora.zip/apisite/trades/v1/trades/outbound${cur ? `?cursor=${cur}` : ''}`;
   const CANCEL_URL   = id  => `https://www.pekora.zip/apisite/trades/v1/trades/${id}/decline`;
-  const KOLIMONS     = 'https://kolimons.xyz/api/ext';
+  const KOROMONS     = 'https://koromons.xyz/api';
 
   // ─── CSS ─────────────────────────────────
   const style = document.createElement('style');
@@ -58,7 +58,7 @@
     #pt-body::-webkit-scrollbar{width:5px}
     #pt-body::-webkit-scrollbar-thumb{background:#2e3039;border-radius:3px}
     .pt-pane{display:none;padding:16px 18px}.pt-pane.active{display:block}
-    .pt-warn{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:6px;padding:10px 13px;color:#f87171;font-size:12px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .pt-notice{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.35);border-radius:6px;padding:10px 13px;color:#fde047;font-size:12px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
     .pt-box{background:#22242b;border:1px solid #2b2d36;border-radius:6px;padding:14px 14px 12px;margin-bottom:12px}
     .pt-box-title{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#555c6b;margin-bottom:11px}
     .pt-box-title em{color:#1a73e8;font-style:normal;font-weight:700}
@@ -141,11 +141,11 @@
   // ─── HTML ─────────────────────────────────
   const wrap = document.createElement('div');
   wrap.innerHTML = `
-    <button id="pt-fab" title="PekoraTrader"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+    <button id="pt-fab" title="Korone Trading Tool"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
     <div id="pt-overlay">
       <div id="pt-modal">
         <div id="pt-header">
-          <div id="pt-title"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>PekoraTrader — Mass Trade Sender</div>
+          <div id="pt-title"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>Korone Trading Tool v2.1</div>
           <button id="pt-close">×</button>
         </div>
         <div id="pt-tabs">
@@ -158,7 +158,7 @@
 
           <!-- BLAST -->
           <div class="pt-pane active" id="pt-pane-blast">
-            <div class="pt-warn">⚠ ABUSING THIS MAY RESULT IN A BAN. ANY ACTIONS YOU TAKE ARE NOT OUR FAULT.</div>
+            <div class="pt-notice">ℹ️ We have switched from using Kolimons to Koromons API due to shutdown.</div>
             <div class="pt-box">
               <div class="pt-box-title">1. Your items to offer <em id="pt-offer-count">(0/4)</em></div>
               <button class="pt-btn pt-btn-blue pt-btn-w" id="pt-load-inv">Load My Inventory</button>
@@ -174,9 +174,9 @@
                   <option value="name">Name A–Z</option>
                 </select>
               </div>
-              <div id="pt-cat-grid"><div style="color:#3e4351;font-size:12px">Loading Kolimons catalog...</div></div>
+              <div id="pt-cat-grid"><div style="color:#3e4351;font-size:12px">Loading Koromons catalog...</div></div>
               <div id="pt-target-preview">
-                <img id="pt-tgt-img" src="" onerror="this.src='https://kolimons.xyz/logo.png'"/>
+                <img id="pt-tgt-img" src="" onerror="this.src='https://koromons.xyz/logo.png'"/>
                 <div style="flex:1"><div id="pt-tgt-name"></div><div id="pt-tgt-stats"></div></div>
                 <button class="pt-btn pt-btn-dark" id="pt-find-owners">Find Owners</button>
               </div>
@@ -236,12 +236,12 @@
             <div class="pt-box">
               <div class="pt-box-title">Item Lookup</div>
               <div style="display:flex;gap:8px"><input class="pt-input" id="pt-lk-item-q" placeholder="Item name or asset ID..." style="flex:1"/><button class="pt-btn pt-btn-blue" id="pt-lk-item-go">Search</button></div>
-              <div class="pt-lk-result" id="pt-lk-item-r"><img id="pt-lk-item-img" src="" onerror="this.src='https://kolimons.xyz/logo.png'"/><div><div class="pt-lk-name" id="pt-lk-item-name"></div><div class="pt-lk-stats" id="pt-lk-item-stats"></div></div></div>
+              <div class="pt-lk-result" id="pt-lk-item-r"><img id="pt-lk-item-img" src="" onerror="this.src='https://koromons.xyz/logo.png'"/><div><div class="pt-lk-name" id="pt-lk-item-name"></div><div class="pt-lk-stats" id="pt-lk-item-stats"></div></div></div>
             </div>
             <div class="pt-box">
               <div class="pt-box-title">Player Lookup</div>
               <div style="display:flex;gap:8px"><input class="pt-input" id="pt-lk-user-q" placeholder="User ID..." style="flex:1"/><button class="pt-btn pt-btn-blue" id="pt-lk-user-go">Search</button></div>
-              <div class="pt-lk-result" id="pt-lk-user-r"><img id="pt-lk-user-img" src="" style="border-radius:50%" onerror="this.src='https://kolimons.xyz/logo.png'"/><div><div class="pt-lk-name" id="pt-lk-user-name"></div><div class="pt-lk-stats" id="pt-lk-user-stats"></div></div></div>
+              <div class="pt-lk-result" id="pt-lk-user-r"><img id="pt-lk-user-img" src="" style="border-radius:50%" onerror="this.src='https://koromons.xyz/logo.png'"/><div><div class="pt-lk-name" id="pt-lk-user-name"></div><div class="pt-lk-stats" id="pt-lk-user-stats"></div></div></div>
             </div>
           </div>
 
@@ -325,9 +325,12 @@
 
   const demCls = d => !d ? 'dem-u' : ['high','amazing','great'].includes(d) ? 'dem-hi' : ['low','terrible','awful'].includes(d) ? 'dem-lo' : 'dem-n';
 
-  function koliReq(path) {
+  // ─── KOROMONS API ────────────────────────
+  // Koromons /api/items returns array: [{Name, Value, Demand, itemId, ...}, ...]
+  // We normalise into allItems = { "<itemId>": { name, value, rap, demand } }
+  function koroReq(path) {
     return new Promise(resolve => GM_xmlhttpRequest({
-      method: 'GET', url: KOLIMONS + path,
+      method: 'GET', url: KOROMONS + path,
       onload: r => { try { resolve(JSON.parse(r.responseText)); } catch { resolve(null); } },
       onerror: () => resolve(null)
     }));
@@ -354,9 +357,49 @@
   let catSearch = '', catSort = 'val-d';
 
   async function loadValues() {
-    const data = await koliReq('/values');
-    if (data?.byId) { allItems = data.byId; blog(`Loaded ${data.count} items from Kolimons`, 'pt-info'); renderCatalog(); }
-    else { blog('Could not reach Kolimons API', 'pt-err'); document.getElementById('pt-cat-grid').innerHTML = '<div style="color:#f87171;font-size:12px">Could not load items</div>'; }
+    const data = await koroReq('/items');
+    if (Array.isArray(data) && data.length) {
+      allItems = {};
+      data.forEach(item => {
+        const id = String(item.itemId || item.ItemId || item.id || '');
+        if (!id) return;
+        allItems[id] = {
+          name:   item.Name   || item.name   || '',
+          value:  item.Value  || item.value  || 0,
+          rap:    0, // fetched individually via /api/items/:id when item is selected
+          demand: item.Demand || item.demand || '',
+          rarity: item.Rarity || item.rarity || '',
+          acronym: item.Acronym || item.acronym || ''
+        };
+      });
+      blog(`Loaded ${Object.keys(allItems).length} items from Koromons`, 'pt-info');
+      renderCatalog();
+      // Fetch RAP for all items in background batches of 10 concurrent requests
+      fetchAllRaps();
+    } else {
+      blog('Could not reach Koromons API', 'pt-err');
+      document.getElementById('pt-cat-grid').innerHTML = '<div style="color:#f87171;font-size:12px">Could not load items</div>';
+    }
+  }
+
+  async function fetchAllRaps() {
+    const ids = Object.keys(allItems);
+    const batchSize = 10;
+    for (let i = 0; i < ids.length; i += batchSize) {
+      const batch = ids.slice(i, i + batchSize);
+      await Promise.all(batch.map(async id => {
+        try {
+          const res = await siteReq('GET', 'https://www.pekora.zip/apisite/economy/v1/assets/' + id + '/resale-data');
+          const rd = JSON.parse(res.body);
+          const rap = rd?.recentAveragePrice || 0;
+          if (allItems[id]) allItems[id].rap = rap;
+        } catch {}
+      }));
+      // Re-render catalog every 5 batches so RAP values appear progressively
+      if ((i / batchSize) % 5 === 0) renderCatalog();
+      await sleep(100);
+    }
+    renderCatalog(); // final render when all done
   }
 
   function getCatalogItems() {
@@ -380,22 +423,34 @@
     items.forEach(item => {
       const div = document.createElement('div');
       div.className = 'pt-citem' + (targetItem?.id === item.id ? ' sel' : '');
-      div.innerHTML = `<img src="${getThumb(item.id)}" loading="lazy" onerror="this.src='https://kolimons.xyz/logo.png'"/><div class="pt-citem-n" title="${item.name||''}">${item.name||'?'}</div><div class="pt-citem-v">${item.value?.toLocaleString()||'?'}</div><div class="pt-citem-r">RAP ${item.rap?.toLocaleString()||'?'}</div>`;
+      div.innerHTML = `<img src="${getThumb(item.id)}" loading="lazy" onerror="this.src='https://koromons.xyz/logo.png'"/><div class="pt-citem-n" title="${item.name||''}">${item.name||'?'}</div><div class="pt-citem-v">${item.value?.toLocaleString()||'?'}</div><div class="pt-citem-r">RAP ${item.rap > 0 ? item.rap.toLocaleString() : '?'}</div>`;
       div.addEventListener('click', () => pickTarget(item));
       grid.appendChild(div);
     });
   }
 
-  function pickTarget(item) {
+  async function pickTarget(item) {
     targetItem = item; owners = [];
     document.getElementById('pt-owners-n').textContent = '0';
     document.getElementById('pt-send').disabled = true;
     document.getElementById('pt-target-label').textContent = `(${item.name})`;
     document.getElementById('pt-tgt-img').src = getThumb(item.id);
     document.getElementById('pt-tgt-name').textContent = item.name || `Item ${item.id}`;
-    document.getElementById('pt-tgt-stats').innerHTML = `Value: <span>${item.value?.toLocaleString()||'?'}</span> &nbsp;·&nbsp; RAP: <span>${item.rap?.toLocaleString()||'?'}</span> &nbsp;·&nbsp; Demand: <span class="dem ${demCls(item.demand)}">${item.demand||'untracked'}</span>`;
+    document.getElementById('pt-tgt-stats').innerHTML = `Value: <span>${item.value?.toLocaleString()||'?'}</span> &nbsp;·&nbsp; RAP: <span id="pt-live-rap">${item.rap > 0 ? item.rap.toLocaleString() : '...'}</span> &nbsp;·&nbsp; Demand: <span class="dem ${demCls(item.demand)}">${item.demand||'untracked'}</span>`;
     document.getElementById('pt-target-preview').classList.add('vis');
-    renderCatalog(); blog(`Target: ${item.name} (ID ${item.id})`, 'pt-info');
+    renderCatalog();
+    blog(`Target: ${item.name} (ID ${item.id})`, 'pt-info');
+    // Fetch RAP from pekora.zip resale-data endpoint
+    const rapRes = await siteReq('GET', 'https://www.pekora.zip/apisite/economy/v1/assets/' + item.id + '/resale-data');
+    let rap = 0;
+    try {
+      const rd = JSON.parse(rapRes.body);
+      rap = rd?.recentAveragePrice || rd?.averagePrice || rd?.rap || 0;
+    } catch {}
+    allItems[item.id] = { ...allItems[item.id], rap };
+    targetItem = { ...targetItem, rap };
+    const rapEl = document.getElementById('pt-live-rap');
+    if (rapEl) rapEl.textContent = rap > 0 ? rap.toLocaleString() : '?';
   }
 
   document.getElementById('pt-cat-search').addEventListener('input', e => { catSearch = e.target.value; renderCatalog(); });
@@ -427,10 +482,10 @@
       const assetId = String(item.assetId || item.AssetId || '');
       const uasId = item.userAssetId || item.UserAssetId || item.id;
       const name = item.name || item.Name || item.assetName || `#${assetId}`;
-      const kol = allItems[assetId];
+      const kor = allItems[assetId];
       const div = document.createElement('div');
       div.className = 'pt-iitem' + (selectedOfferItems.includes(uasId) ? ' sel' : '');
-      div.innerHTML = `<img src="${getThumb(assetId)}" loading="lazy" onerror="this.src='https://kolimons.xyz/logo.png'"/><div class="pt-iitem-n" title="${name}">${name}</div><div class="pt-iitem-v">${kol ? kol.value?.toLocaleString() : ''}</div>`;
+      div.innerHTML = `<img src="${getThumb(assetId)}" loading="lazy" onerror="this.src='https://koromons.xyz/logo.png'"/><div class="pt-iitem-n" title="${name}">${name}</div><div class="pt-iitem-v">${kor ? kor.value?.toLocaleString() : ''}</div>`;
       div.addEventListener('click', () => toggleOffer(uasId, assetId, div));
       grid.appendChild(div);
     });
@@ -451,7 +506,7 @@
     let rap = 0, val = 0;
     selectedOfferItems.forEach(uasId => {
       const item = myInventory.find(i => (i.userAssetId||i.UserAssetId||i.id) === uasId);
-      if (item) { const kol = allItems[String(item.assetId||item.AssetId||'')]; if (kol) { rap += kol.rap||0; val += kol.value||0; } }
+      if (item) { const kor = allItems[String(item.assetId||item.AssetId||'')]; if (kor) { rap += kor.rap||0; val += kor.value||0; } }
     });
     document.getElementById('pt-sel-rap').textContent = `${rap.toLocaleString()} RAP`;
     document.getElementById('pt-sel-val').textContent = `${val.toLocaleString()} Value`;
@@ -460,6 +515,7 @@
   const checkSendReady = () => { document.getElementById('pt-send').disabled = !(selectedOfferItems.length > 0 && owners.length > 0 && !isRunning); };
 
   // ─── FIND OWNERS ─────────────────────────
+  // Uses the original pekora.zip inventory endpoints — unchanged from original script
   document.getElementById('pt-find-owners').addEventListener('click', async () => {
     if (!targetItem) return;
     blog(`Fetching owners of "${targetItem.name}"...`, 'pt-info');
@@ -514,7 +570,6 @@
     list.innerHTML = '';
     outboundTrades.forEach(trade => {
       const partner = trade.user?.name || trade.user?.displayName || `User ${trade.user?.id||'?'}`;
-      const created = trade.created ? new Date(trade.created).toLocaleDateString() : '';
       const expires = trade.expiration ? new Date(trade.expiration).toLocaleDateString() : '';
       const sel = selectedTradeIds.has(trade.id);
 
@@ -562,7 +617,6 @@
     syncCancelBtn();
   });
 
-  // Cancel delay stepper
   document.getElementById('pt-cdelay-m').addEventListener('click', () => { cancelDelay = Math.max(1, cancelDelay-1); document.getElementById('pt-cdelay-v').textContent = `${cancelDelay}s`; });
   document.getElementById('pt-cdelay-p').addEventListener('click', () => { cancelDelay++; document.getElementById('pt-cdelay-v').textContent = `${cancelDelay}s`; });
 
@@ -579,19 +633,15 @@
 
     for (let i = 0; i < toCancel.length; i++) {
       if (shouldStopCancel) { clog('Stopped.', 'pt-err'); break; }
-
       const id = toCancel[i];
       const trade = outboundTrades.find(t => t.id === id);
       const partner = trade?.user?.name || `#${id}`;
-
       const res = await siteReq('POST', CANCEL_URL(id));
-
       if (res.status === 429) {
         clog('Rate limited — waiting 30s...', 'pt-err');
         setProgress('pt-cprog-fill', 'pt-cprog-count', 'pt-cprog-status', done+failed, toCancel.length, 'Rate limited — 30s cooldown');
         await sleep(30000); i--; continue;
       }
-
       if (res.status === 200) {
         done++;
         clog(`✓ Cancelled trade with ${partner}`, 'pt-ok');
@@ -603,7 +653,6 @@
         failed++;
         clog(`✗ Failed #${id} (HTTP ${res.status})`, 'pt-err');
       }
-
       setProgress('pt-cprog-fill', 'pt-cprog-count', 'pt-cprog-status', done+failed, toCancel.length, 'Cancelling...');
       if (i < toCancel.length-1 && !shouldStopCancel) await sleep(cancelDelay * 1000);
     }
@@ -615,7 +664,7 @@
     document.getElementById('pt-cancel-stop').disabled = true;
     syncCancelBtn(); syncSelectAll();
     setProgress('pt-cprog-fill', 'pt-cprog-count', 'pt-cprog-status', done+failed, toCancel.length, 'Complete');
-    if (done > 0) GM_notification({ title: 'PekoraTrader', text: `Cancelled ${done} trades.`, timeout: 4000 });
+    if (done > 0) GM_notification({ title: 'Korone Trading Tool', text: `Cancelled ${done} trades.`, timeout: 4000 });
   });
 
   document.getElementById('pt-cancel-stop').addEventListener('click', () => { shouldStopCancel = true; clog('Stopping...', 'pt-err'); });
@@ -672,13 +721,14 @@
       if (i < queue.length-1 && !shouldStop) await sleep(delaySeconds*1000);
     }
     blog(`Complete — Sent: ${sent}  Failed: ${failed}  Skipped: ${skipped}`, 'pt-ok');
-    if (sent > 0) GM_notification({ title: 'PekoraTrader', text: `Blast done! ${sent} trades sent.`, timeout: 5000 });
+    if (sent > 0) GM_notification({ title: 'Korone Trading Tool', text: `Blast done! ${sent} trades sent.`, timeout: 5000 });
     isRunning = false;
     document.getElementById('pt-stop').disabled = true;
     checkSendReady();
     setProgress('pt-prog-fill','pt-prog-count','pt-prog-status',sent+failed+skipped,queue.length,'Complete');
   }
 
+  // Unchanged from original — uses pekora.zip inventory endpoint
   async function getTheirAssets(uid, targetAssetId) {
     const res = await siteReq('GET', `https://www.pekora.zip/apisite/inventory/v1/users/${uid}/assets/collectibles?assetId=${targetAssetId}`);
     try {
@@ -696,8 +746,15 @@
   // ─── LOOKUP ──────────────────────────────
   async function itemLookup() {
     const q = document.getElementById('pt-lk-item-q').value.trim(); if (!q) return;
-    let item = /^\d+$/.test(q) ? await koliReq(`/item/${q}`) : null;
-    if (!item) { const m = Object.entries(allItems).find(([,v])=>v.name?.toLowerCase().includes(q.toLowerCase())); if (m) item = { found: true, assetId: m[0], ...m[1] }; }
+    let item = null;
+    if (/^\d+$/.test(q)) {
+      const d = await koroReq('/items/' + q);
+      if (d && (d.Name || d.name)) item = { found: true, assetId: q, name: d.Name||d.name, value: d.Value||d.value||0, rap: d.RAP||d.Rap||d.rap||0, demand: d.Demand||d.demand||'', rarity: d.Rarity||d.rarity||'' };
+    }
+    if (!item) {
+      const m = Object.entries(allItems).find(([,v]) => v.name?.toLowerCase().includes(q.toLowerCase()));
+      if (m) item = { found: true, assetId: m[0], ...m[1] };
+    }
     const r = document.getElementById('pt-lk-item-r');
     if (item?.found) {
       document.getElementById('pt-lk-item-img').src = getThumb(item.assetId);
@@ -709,17 +766,21 @@
 
   async function playerLookup() {
     const q = document.getElementById('pt-lk-user-q').value.trim(); if (!q) return;
-    const p = await koliReq(`/player/${q}`);
+    const p = await koroReq('/users/' + q);
     const r = document.getElementById('pt-lk-user-r');
-    if (p?.found) {
-      document.getElementById('pt-lk-user-img').src = p.avatarUrl || '';
-      document.getElementById('pt-lk-user-name').textContent = `${p.displayName} (@${p.username})`;
-      document.getElementById('pt-lk-user-stats').innerHTML = `<b>Value:</b> ${p.value?.toLocaleString()||'?'}<br/><b>RAP:</b> ${p.rap?.toLocaleString()||'?'}<br/><b>Items:</b> ${p.itemCount??'?'}`;
+    if (p && (p.id || p.name)) {
+      // Fetch avatar headshot
+      let avatarUrl = '';
+      const av = await koroReq('/pekora/avatar-headshot?userIds=' + (p.id||q) + '&size=150x150&format=png');
+      if (av?.data?.[0]?.imageUrl) avatarUrl = av.data[0].imageUrl;
+      document.getElementById('pt-lk-user-img').src = avatarUrl || 'https://koromons.xyz/logo.png';
+      document.getElementById('pt-lk-user-name').textContent = p.displayName ? `${p.displayName} (@${p.name})` : (p.name || `User ${q}`);
+      document.getElementById('pt-lk-user-stats').innerHTML = `<b>Value:</b> ${p.Value?.toLocaleString()||'?'}<br/><b>Joined:</b> ${p.created ? new Date(p.created).toLocaleDateString() : '?'}<br/><b>Banned:</b> ${p.isBanned ? 'Yes' : 'No'}`;
       r.classList.add('vis');
     } else {
-      document.getElementById('pt-lk-user-img').src = 'https://kolimons.xyz/logo.png';
-      document.getElementById('pt-lk-user-name').textContent = 'User not tracked';
-      document.getElementById('pt-lk-user-stats').innerHTML = `Kolimons has no data for user <b>${q}</b>.`;
+      document.getElementById('pt-lk-user-img').src = 'https://koromons.xyz/logo.png';
+      document.getElementById('pt-lk-user-name').textContent = 'User not found';
+      document.getElementById('pt-lk-user-stats').innerHTML = `No data for user <b>${q}</b>.`;
       r.classList.add('vis');
     }
   }
