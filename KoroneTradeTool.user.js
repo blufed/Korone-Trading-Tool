@@ -1,7 +1,7 @@
 // ==UserScript==
 // @downloadURL https://raw.githubusercontent.com/blufed/Korone-Trading-Tool/main/KoroneTradeTool.user.js
 // @updateURL https://raw.githubusercontent.com/blufed/Korone-Trading-Tool/main/KoroneTradeTool.user.js
-// @name         Korone Trading Tool v2.4 test
+// @name         Korone Trading Tool v2.4
 // @namespace    https://pekora.zip
 // @version      2.4
 // @description  Mass trade tool for pekora.zip with Koromons integration
@@ -1798,3 +1798,4 @@
   initKeySystem();
 
 })();
+
